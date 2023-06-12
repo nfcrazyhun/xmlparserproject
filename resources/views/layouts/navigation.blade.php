@@ -12,8 +12,14 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <!-- Home -->
                     <x-nav-link :href="route('home')" :active="request()->routeIs('home')">
                         {{ __('Home') }}
+                    </x-nav-link>
+
+                    <!-- XML Parser v1 -->
+                    <x-nav-link :href="route('xml-parser.index')" :active="request()->routeIs('xml-parser.*')">
+                        {{ __('XML Parser') }}
                     </x-nav-link>
                 </div>
             </div>
