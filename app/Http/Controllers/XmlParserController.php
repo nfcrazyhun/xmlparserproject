@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreXmlParserRequest;
 use App\Models\Product;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
 
 class XmlParserController extends Controller
@@ -86,43 +87,10 @@ class XmlParserController extends Controller
 
         //dump($xml->children()[0]->asXML());
 
-        $i = 0;
-        foreach ($xml->children() as $product) {
+        foreach ($xml->children() as $xmlProduct) {
+            $model = ProductService::updateOrCreateFromXml($xmlProduct);
 
-            // [LÁNCOK, KARLÁNCOK, Sárga arany]
-            $productCategories = [];
-            foreach ($product->category->children() as $category) {
-                $productCategories[] = (string) $category;
-            }
-
-            $productCustomFields = [];
-            foreach ($product->customFields->children() as $cf) {
-                $key = (string) $cf->attributes()->name;
-                //$value = explode(',', (string) $cf);
-                //$value = array_map('trim', $value);
-                $value = (string) $cf;
-                $productCustomFields[$key] = $value;
-            }
-
-
-            // todo: refactor into upsert: https://www.youtube.com/watch?v=J8x268as2qo | https://www.youtube.com/watch?v=1LN2b599xN8
-            Product::updateOrCreate(
-                ['number' => (string) $product->number],    // where
-                [
-                    'name' => (string) $product->name,
-                    'category' => $productCategories,
-                    'price' => (int) $product->price,
-                    'url' => (string) $product->url,
-                    'image' => (string) $product->image,
-                    'description' => (string) $product->description,
-                    'stock' => (int) $product->stock,
-                    'status' => (bool)(int) $product->status,
-                    'custom_fields' => $productCustomFields
-                ]
-            );
-
-            $i++;
-            if ($i > 10) { break;}
+            //dd('dd', $model);
         }
 
         return redirect()->route('xml-parser.index')->with('flash','Item created successfully!');

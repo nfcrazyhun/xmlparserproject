@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreXmlParserRequest;
+use App\Models\Product;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
+use XMLReader;
+use SimpleXMLElement;
 
 class XmlParserV2Controller extends Controller
 {
@@ -12,7 +16,7 @@ class XmlParserV2Controller extends Controller
      */
     public function index()
     {
-        return view('xml-parser.index');
+        return view('xml-parser-v2.index');
     }
 
     /**
@@ -28,7 +32,38 @@ class XmlParserV2Controller extends Controller
      */
     public function store(StoreXmlParserRequest $request)
     {
-        //
+        // xml reader instance
+        $reader = new XMLReader();
+
+        // xml file to read
+        $xmlFile = $request->file('upload')->getRealPath();
+
+        try {
+            // try to parse xml
+            if( $reader->open('file://'.$xmlFile) === false) {
+                throw new \Exception("Failed loading XML\n");
+            }
+
+            while ($reader->read()) {
+                if ($reader->nodeType == XMLReader::ELEMENT){
+                    if ($reader->name == 'product'){
+                        $outerXml = $reader->readouterXml();
+                        $xlmObject = simplexml_load_string($outerXml);
+
+                        $model = ProductService::updateOrCreateFromXml($xlmObject);
+
+                        //dd('dd', $model);
+                    }
+                }
+            }
+        }
+        catch (\Exception $e) {
+            // show errors on screen
+            echo $e->getMessage();
+        }
+        finally {
+            $reader->close();
+        }
     }
 
     /**
@@ -62,4 +97,6 @@ class XmlParserV2Controller extends Controller
     {
         //
     }
+
+
 }
