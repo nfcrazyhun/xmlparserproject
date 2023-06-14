@@ -78,9 +78,9 @@ class XmlParserController extends Controller
             exit();
         }
 
-        dump($xml->count());    // 182
-        dump($xml->getName());  // "productFeed"
-        dump($xml->children()->getName());  // "product"
+        //dump($xml->count());    // 182
+        //dump($xml->getName());  // "productFeed"
+        //dump($xml->children()->getName());  // "product"
         //dump($xml);  // (array)
         //echo '<pre>'; print_r($xml); echo '</pre>';   // (array)
 
