@@ -64,6 +64,8 @@ class XmlParserV2Controller extends Controller
         finally {
             $reader->close();
         }
+
+        return redirect()->route('xml-parser.index')->with('flash','Item created successfully!');
     }
 
     /**
