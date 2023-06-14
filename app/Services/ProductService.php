@@ -24,6 +24,7 @@ class ProductService
             $productCustomFields[$key] = $value;
         }
 
+        // todo: refactor into upsert: https://www.youtube.com/watch?v=J8x268as2qo | https://www.youtube.com/watch?v=1LN2b599xN8
         return Product::updateOrCreate(
             ['number' => (string) $product->number],    // where
             [
