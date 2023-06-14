@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\XmlParserController;
+use App\Http\Controllers\XmlParserV2Controller;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,4 +19,5 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
-Route::resource('xml-parser', \App\Http\Controllers\XmlParserController::class);
+Route::resource('xml-parser', XmlParserController::class)->only('index','store');
+Route::resource('xml-parser-v2', XmlParserV2Controller::class);
