@@ -32,7 +32,7 @@
         <section class="border-2 border-indigo-400 bg-indigo-100 py-4 shadow">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="ml-4">
-                    <span class="font-semibold">{{ __('System') }}: {{ $message }}</span>
+                    <span class="font-semibold">{{ __('System') }}: </span><span>{!! $message !!}</span>
                 </div>
             </div>
         </section>

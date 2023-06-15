@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\XmlParseException;
 use App\Http\Requests\StoreXmlParserRequest;
 use App\Models\Product;
 use App\Services\ProductService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Benchmark;
+use Illuminate\Support\Collection;
 use XMLReader;
-use SimpleXMLElement;
 
 class XmlParserV2Controller extends Controller
 {
@@ -32,6 +35,7 @@ class XmlParserV2Controller extends Controller
      */
     public function store(StoreXmlParserRequest $request)
     {
+        $start_time = microtime(true);
         // xml reader instance
         $reader = new XMLReader();
 
@@ -41,8 +45,10 @@ class XmlParserV2Controller extends Controller
         try {
             // try to parse xml
             if( $reader->open('file://'.$xmlFile) === false) {
-                throw new \Exception("Failed loading XML\n");
+                throw new XmlParseException("Failed loading XML\n");
             }
+
+            $collection = new Collection();
 
             while ($reader->read()) {
                 if ($reader->nodeType == XMLReader::ELEMENT){
@@ -50,22 +56,46 @@ class XmlParserV2Controller extends Controller
                         $outerXml = $reader->readouterXml();
                         $xlmObject = simplexml_load_string($outerXml);
 
-                        $model = ProductService::updateOrCreateFromXml($xlmObject);
+                        $model = ProductService::makeFromXml($xlmObject);
+                        $collection->add($model);
 
-                        //dd('dd', $model);
+                        //$upsert = Product::upsert([$model->toArray()], 'number');
+
+
+                        //dd('dd', $model->toArray());
                     }
                 }
             }
+            //dd($collection->count());
+
+        $collection
+            ->chunk(1000)
+            ->each(fn(Collection $chunk) => Product::upsert($chunk->toArray(), 'number'));
+
         }
-        catch (\Exception $e) {
+        catch (XmlParseException $e) {
             // show errors on screen
             echo $e->getMessage();
+            $reader->close();
+            die();
         }
+//        catch (\Exception $e) {   // Note: The default exception has been intentionally omitted to let Laravel catch the errors for easier debugging.
+//            // show errors on screen
+//            echo $e->getMessage();
+//            $reader->close();
+//            die();
+//        }
         finally {
             $reader->close();
         }
 
-        return redirect()->route('xml-parser.index')->with('flash','Item created successfully!');
+        $end_time = microtime(true);
+        $benchmark = [
+            'count' => $collection->count(),
+            'exec_time' => number_format($end_time - $start_time, 3),
+        ];
+
+        return redirect()->route('xml-parser-v2.index')->with('flash',"Items imported successfully! <br> {$benchmark['count']} items in {$benchmark['exec_time']} sec.");
     }
 
     /**
