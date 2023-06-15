@@ -35,26 +35,49 @@ class XmlParserV2Controller extends Controller
      */
     public function store(StoreXmlParserRequest $request)
     {
+        // Benchmark start
         $start_time = microtime(true);
+
+        libxml_use_internal_errors(true);
+
         // xml reader instance
         $reader = new XMLReader();
 
         // xml file to read
         $xmlFile = $request->file('upload')->getRealPath();
 
+        // error message bag
+        $msg = [];
+
         try {
             // try to parse xml
-            if( $reader->open('file://'.$xmlFile) === false) {
+            if ($reader->open('file://' . $xmlFile) === false) {
                 throw new XmlParseException("Failed loading XML\n");
             }
+
+            $reader->setParserProperty(XMLReader::VALIDATE, true);
+
+            // set schema
+            $reader->setSchema(public_path('xsd/unas.xsd'));
 
             $collection = new Collection();
 
             while ($reader->read()) {
-                if ($reader->nodeType == XMLReader::ELEMENT){
-                    if ($reader->name == 'product'){
+                // Validate xml
+                if ($reader->isValid() === false) {
+                    // log errors
+                    $err = \libxml_get_last_error();
+                    if ($err && $err instanceof \libXMLError) {
+                        $msgs[] = \trim($err->message) . ' on line ' . $err->line;
+                    }
+                }
+
+                // process xml
+                if ($reader->nodeType == XMLReader::ELEMENT) {
+                    if ($reader->name == 'product') {
                         $outerXml = $reader->readouterXml();
                         $xlmObject = simplexml_load_string($outerXml);
+                        //dd($xlmObject);
 
                         $model = ProductService::makeFromXml($xlmObject);
                         $collection->add($model);
@@ -62,20 +85,30 @@ class XmlParserV2Controller extends Controller
                         //$upsert = Product::upsert([$model->toArray()], 'number');
 
 
+
                         //dd('dd', $model->toArray());
+                        $reader->next();
                     }
                 }
             }
-            //dd($collection->count());
 
-        $collection
-            ->chunk(1000)
-            ->each(fn(Collection $chunk) => Product::upsert($chunk->toArray(), 'number'));
+            // handling errors
+            if (!empty($msgs)) {
+                throw new XmlParseException("XML schema validation errors:\n - " . implode("\n - ", array_unique($msgs)));
+            }
 
-        }
-        catch (XmlParseException $e) {
+
+            // Upsert data into database
+            $collection
+                ->chunk(1000)
+                ->each(fn(Collection $chunk) => Product::upsert($chunk->toArray(), 'number'));
+
+        } catch (XmlParseException $e) {
             // show errors on screen
+            echo '<pre>';
             echo $e->getMessage();
+            echo '</pre>';
+
             $reader->close();
             die();
         }
@@ -89,13 +122,14 @@ class XmlParserV2Controller extends Controller
             $reader->close();
         }
 
+        // Benchmark end
         $end_time = microtime(true);
         $benchmark = [
             'count' => $collection->count(),
             'exec_time' => number_format($end_time - $start_time, 3),
         ];
 
-        return redirect()->route('xml-parser-v2.index')->with('flash',"Items imported successfully! <br> {$benchmark['count']} items in {$benchmark['exec_time']} sec.");
+        return redirect()->route('xml-parser-v2.index')->with('flash', "Items imported successfully! <br> {$benchmark['count']} items in {$benchmark['exec_time']} sec.");
     }
 
     /**
