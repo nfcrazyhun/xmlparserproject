@@ -18,14 +18,20 @@
 
                         <div class="">
                             <label for="upload" class="mb-2 block text-sm font-medium text-gray-900">Upload file</label>
-                            <input type="file" id="upload" name="upload" class="block">
+                            <input type="file" accept=".xml" id="upload" name="upload" class="block">
                             <p class="mt-1 text-sm text-gray-500" id="file_input_help">*.xml</p>
                             <x-input-errors :messages="$errors->get('upload')" class="mt-2" />
                         </div>
 
-                        <x-primary-button>
-                            {{ __('Save') }}
-                        </x-primary-button>
+                        <!-- Save button -->
+                        <div x-data="{disabled: false}" class="flex">
+                            <x-primary-button @click="disabled = true" ::class="{'cursor-not-allowed': disabled, 'corsor-copy': !disabled}">
+                                <div class="flex">
+                                    <x-spinner ::class="{'block': disabled, 'hidden': !disabled}" />
+                                    <span>{{ __('Save') }}</span>
+                                </div>
+                            </x-primary-button>
+                        </div>
                     </form>
                 </div>
             </div>
