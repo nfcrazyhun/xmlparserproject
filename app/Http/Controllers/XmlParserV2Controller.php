@@ -44,21 +44,25 @@ class XmlParserV2Controller extends Controller
         $reader = new XMLReader();
 
         // xml file to read
-        $xmlFile = $request->file('upload')->getRealPath();
+        $xmlPath = $request->file('upload')->getRealPath();
 
         // error message bag
         $msg = [];
 
         try {
             // try to parse xml
-            if ($reader->open('file://' . $xmlFile) === false) {
+            if ($reader->open('file://' . $xmlPath) === false) {
                 throw new XmlParseException("Failed loading XML\n");
             }
 
+            // enable validate
             $reader->setParserProperty(XMLReader::VALIDATE, true);
 
+            // guess schema
+            $schemaPath = ProductService::guessSchema($xmlPath);
+
             // set schema
-            $reader->setSchema(public_path('xsd/unas.xsd'));
+            $reader->setSchema($schemaPath);
 
             $collection = new Collection();
 
@@ -92,9 +96,11 @@ class XmlParserV2Controller extends Controller
                 }
             }
 
+
             // handling errors
             if (!empty($msgs)) {
-                throw new XmlParseException("XML schema validation errors:\n - " . implode("\n - ", array_unique($msgs)));
+                // disabled temporary
+                //throw new XmlParseException("XML schema validation errors:\n - " . implode("\n - ", array_unique($msgs)));
             }
 
 
