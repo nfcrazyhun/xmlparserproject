@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -50,7 +51,7 @@ class Product extends Model
     protected function image(): Attribute
     {
         return Attribute::make(
-            get: fn(string $value) => !empty($value) ? $value : $this->DEFAULT_IMAGE_URL,
+            get: fn(string|null $value) => !empty($value) ? $value : self::DEFAULT_IMAGE_URL,
         );
     }
 

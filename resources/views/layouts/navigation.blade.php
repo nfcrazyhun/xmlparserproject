@@ -21,6 +21,11 @@
                     <x-nav-link :href="route('xml-parser-v2.index')" :active="request()->routeIs('xml-parser-v2.*')">
                         {{ __('XML Parser v2') }}
                     </x-nav-link>
+
+                    <!-- Products -->
+                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                        {{ __('Products') }}
+                    </x-nav-link>
                 </div>
             </div>
         </div>

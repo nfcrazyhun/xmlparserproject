@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\XmlParserController;
 use App\Http\Controllers\XmlParserV2Controller;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,3 +21,4 @@ Route::get('/', function () {
 
 
 Route::resource('xml-parser-v2', XmlParserV2Controller::class)->only('index','store');
+Route::resource('products', ProductController::class)->only('index','show');
