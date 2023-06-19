@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Benchmark;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use XMLReader;
 
 class XmlParserV2Controller extends Controller
@@ -49,6 +51,10 @@ class XmlParserV2Controller extends Controller
 
         // error message bag
         $msg = [];
+
+        // logs
+        $logChannel = null;
+        $logPath = storage_path('logs/'.(Str::slug(now()->toDateTimeString()).'.log'));
 
         try {
             // try to parse xml
@@ -102,6 +108,13 @@ class XmlParserV2Controller extends Controller
             if (!empty($msgs)) {
                 // disabled temporary
                 //throw new XmlParseException("XML schema validation errors:\n - " . implode("\n - ", array_unique($msgs)));
+
+                // log errors in file
+                $logChannel = Log::build([
+                    'driver' => 'single',
+                    'path' => $logPath,
+                ]);
+                $logChannel->info( "XML schema validation errors:\n - " . implode("\n - ", array_unique($msgs)) );
             }
 
 
@@ -140,7 +153,9 @@ class XmlParserV2Controller extends Controller
             'exec_time' => number_format($end_time - $start_time, 3),
         ];
 
-        return redirect()->route('xml-parser-v2.index')->with('flash', "Items imported successfully! <br> {$benchmark['count']} items in {$benchmark['exec_time']} sec.");
+        return redirect()->route('xml-parser-v2.index')
+            ->with('flash', "Items imported successfully! <br> {$benchmark['count']} items in {$benchmark['exec_time']} sec.")
+            ;
     }
 
     /**
