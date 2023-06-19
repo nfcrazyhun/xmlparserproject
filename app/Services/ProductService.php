@@ -82,8 +82,8 @@ class ProductService
     {
         // List of schemas
         $schemas = [
-            'productFeed' => public_path('xsd/unas.xsd'),
-            'Product' => public_path('xsd/arukereso.xsd'),
+            'productFeed' => storage_path('xsd/unas.xsd'),
+            'Product' => storage_path('xsd/arukereso.xsd'),
         ];
 
         $reader = new XMLReader();
