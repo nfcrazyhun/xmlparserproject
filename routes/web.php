@@ -19,5 +19,5 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
-Route::resource('xml-parser', XmlParserController::class)->only('index','store');
+
 Route::resource('xml-parser-v2', XmlParserV2Controller::class)->only('index','store');

@@ -17,11 +17,6 @@
                         {{ __('Home') }}
                     </x-nav-link>
 
-                    <!-- XML Parser v1 -->
-                    <x-nav-link :href="route('xml-parser.index')" :active="request()->routeIs('xml-parser.*')">
-                        {{ __('XML Parser') }}
-                    </x-nav-link>
-
                     <!-- XML Parser v2 -->
                     <x-nav-link :href="route('xml-parser-v2.index')" :active="request()->routeIs('xml-parser-v2.*')">
                         {{ __('XML Parser v2') }}
