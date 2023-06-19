@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Benchmark;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use XMLReader;
 
 class XmlParserV2Controller extends Controller
@@ -105,9 +106,13 @@ class XmlParserV2Controller extends Controller
 
 
             // Upsert data into database
-            $collection
-                ->chunk(1000)
-                ->each(fn(Collection $chunk) => Product::upsert($chunk->toArray(), 'number'));
+
+            DB::transaction(function () use ($collection){
+                $collection
+                    ->chunk(1000)
+                    ->each(fn(Collection $chunk) => Product::upsert($chunk->toArray(), 'number'));
+            });
+
 
         } catch (XmlParseException $e) {
             // show errors on screen
