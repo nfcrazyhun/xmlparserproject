@@ -26,14 +26,6 @@ class XmlParserV2Controller extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreXmlParserRequest $request)
@@ -88,16 +80,10 @@ class XmlParserV2Controller extends Controller
                     if ($reader->name == 'product') {
                         $outerXml = $reader->readouterXml();
                         $xlmObject = simplexml_load_string($outerXml);
-                        //dd($xlmObject);
 
                         $model = ProductService::makeFromXml($xlmObject);
                         $collection->add($model);
 
-                        //$upsert = Product::upsert([$model->toArray()], 'number');
-
-
-
-                        //dd('dd', $model->toArray());
                         $reader->next();
                     }
                 }
@@ -119,7 +105,6 @@ class XmlParserV2Controller extends Controller
 
 
             // Upsert data into database
-
             DB::transaction(function () use ($collection){
                 $collection
                     ->chunk(1000)
@@ -157,38 +142,4 @@ class XmlParserV2Controller extends Controller
             ->with('flash', "Items imported successfully! <br> {$benchmark['count']} items in {$benchmark['exec_time']} sec.")
             ;
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-
-
 }
